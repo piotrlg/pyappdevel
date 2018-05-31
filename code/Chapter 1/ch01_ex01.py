@@ -1,7 +1,7 @@
 from __future__ import print_function
 """ch01_ex01
 
-A simple text-based game (script) - select a hut where Sir Foo can rest
+A simple text-based game (script) - select a hut where Sir Foo can rest.
 
 This module is compatible with Python 3.5.x. It contains
 supporting code for the book, Learning Python Application Development,
