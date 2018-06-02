@@ -95,7 +95,8 @@ if __name__ == '__main__':
     while keep_playing == 'y':
         huts = []
         # Randomly append 'enemy' or 'friend' or None to the huts list
-        while len(huts) < 5:
+#        while len(huts) < 5:
+        for _ in range(5):
             computer_choice = random.choice(occupants)
             huts.append(computer_choice)
 
