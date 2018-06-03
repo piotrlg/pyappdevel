@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 """ch01_ex01
 
 A simple text-based game (script) - select a hut where Sir Foo can rest.
@@ -67,12 +68,9 @@ if sys.version_info < (3, 0):
     print("Exiting...")
     sys.exit(1)
 
-if __name__ == '__main__':
-    keep_playing = 'y'
-    occupants = ['enemy', 'friend', 'unoccupied']
-    # Print the game mission
-    width = 72
-    dotted_line = '-' * width
+
+def show_theme_message(dotted_line, width):
+    """Print the game mission"""
     print(dotted_line)
     print("\033[1m" + "Attack of The Orcs v0.0.1:" + "\033[0m")
     msg = (
@@ -85,45 +83,76 @@ if __name__ == '__main__':
         "was no one to be seen around. Hesitantly, he  decided to enter..")
 
     print(textwrap.fill(msg, width=width))
+
+
+def show_game_mission(dotted_line):
     print("\033[1m" + "Mission:" + "\033[0m")
     print("\tChoose a hut where Sir Foo can rest...")
     print("\033[1m" + "TIP:" + "\033[0m")
     print("Be careful as there are enemies lurking around!")
     print(dotted_line)
 
+
+def occupy_huts():
+    huts = []
+    occupants = ['friend', 'enemy', 'unoccupied']
+    # Randomly append 'enemy' or 'friend' or None to the huts list
+    for _ in range(5):
+        computer_choice = random.choice(occupants)
+        huts.append(computer_choice)
+    return huts
+
+
+def process_user_choice():
+    # Prompt user to select a hut
+    msg = "\033[1m" + "Choose a hut number to enter (1-5): " + "\033[0m"
+    user_choice = input("\n" + msg)
+    idx = int(user_choice)
+    return idx
+
+
+def reveal_ocupants(idx, huts, dotted_line):
+    """Print the occupant info"""
+    print("Revealing the occupants...")
+    msg = ""
+    for i in range(len(huts)):
+        occupant_info = "<{:d}:{}>".format(i + 1, huts[i])
+        if i + 1 == idx:
+            occupant_info = "\033[1m" + occupant_info + "\033[0m"
+        msg += occupant_info + " "
+    print("\t" + msg)
+    print(dotted_line)
+    print("\033[1m" + "Entering hut %d... " % idx + "\033[0m", end=' ')
+
+
+def enter_hut(idx, huts, dotted_line):
+    """Determine and announce the winner"""
+    if huts[idx - 1] == 'enemy':
+        print("\033[1m" + "YOU LOSE :( Better luck next time!" +
+              "\033[0m")
+    else:
+        print("\033[1m" + "Congratulations! YOU WIN!!!" + "\033[0m")
+    print(dotted_line)
+
+
+def run_game():
+    """main loop"""
+    keep_playing = 'y'
+    width = 72
+    dotted_line = "-" * width
+
+    show_theme_message(dotted_line, width)
+    show_game_mission(dotted_line)
+
     # The main while loop. Keep playing depending on the user input.
     while keep_playing == 'y':
-        huts = []
-        # Randomly append 'enemy' or 'friend' or None to the huts list
-#        while len(huts) < 5:
-        for _ in range(5):
-            computer_choice = random.choice(occupants)
-            huts.append(computer_choice)
+        huts = occupy_huts()
+        idx = process_user_choice()
+        reveal_ocupants(idx, huts, dotted_line)
+        enter_hut(idx, huts, dotted_line)
 
-        # Prompt user to select a hut
-        msg = "\033[1m" + "Choose a hut number to enter (1-5): " + "\033[0m"
-        user_choice = input("\n" + msg)
-        idx = int(user_choice)
-
-        # Print the occupant info
-        print("Revealing the occupants...")
-        msg = ""
-        for i in range(len(huts)):
-            occupant_info = "<%d:%s>"%(i+1, huts[i])
-            if i + 1 == idx:
-                occupant_info = "\033[1m" + occupant_info + "\033[0m"
-            msg += occupant_info + " "
-        print("\t" + msg)
-        print(dotted_line)
-        print("\033[1m" + "Entering hut %d... " % idx + "\033[0m", end=' ')
-
-        # Determine and announce the winner
-        if huts[idx-1] == 'enemy':
-            print("\033[1m" + "YOU LOSE :( Better luck next time!" +
-                  "\033[0m")
-        else:
-            print("\033[1m" + "Congratulations! YOU WIN!!!" + "\033[0m")
-
-        print(dotted_line)
         keep_playing = input("Play again? Yes(y)/No(n):")
 
+
+if __name__ == '__main__':
+    run_game()
