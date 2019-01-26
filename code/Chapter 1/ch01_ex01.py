@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from symbol import continue_stmt
+
 """ch01_ex01
 
 A simple text-based game (script) - select a hut where Sir Foo can rest.
@@ -69,10 +71,19 @@ if sys.version_info < (3, 0):
     sys.exit(1)
 
 
-def show_theme_message(dotted_line, width):
+def print_bold(msg, end='\n'):
+    """print msg in bold"""
+    print("\033[1m" + msg + "\033[0m", end=end)
+
+
+def print_dotted_line(width=72):
+    print('-' * width)
+
+
+def show_theme_message(width):
     """Print the game mission"""
-    print(dotted_line)
-    print("\033[1m" + "Attack of The Orcs v0.0.1:" + "\033[0m")
+    print_dotted_line()
+    print_bold("Attack of The Orcs v0.0.2:")
     msg = (
         "The war between humans and their arch enemies, Orcs, was in the "
         "offing. Sir Foo, one of the brave knights guarding the southern "
@@ -85,12 +96,12 @@ def show_theme_message(dotted_line, width):
     print(textwrap.fill(msg, width=width))
 
 
-def show_game_mission(dotted_line):
-    print("\033[1m" + "Mission:" + "\033[0m")
+def show_game_mission():
+    print_bold("Mission:")
     print("\tChoose a hut where Sir Foo can rest...")
-    print("\033[1m" + "TIP:" + "\033[0m")
+    print_bold("TIP:")
     print("Be careful as there are enemies lurking around!")
-    print(dotted_line)
+    print_dotted_line()
 
 
 def occupy_huts():
@@ -111,7 +122,7 @@ def process_user_choice():
     return idx
 
 
-def reveal_ocupants(idx, huts, dotted_line):
+def reveal_ocupants(idx, huts):
     """Print the occupant info"""
     print("Revealing the occupants...")
     msg = ""
@@ -121,38 +132,84 @@ def reveal_ocupants(idx, huts, dotted_line):
             occupant_info = "\033[1m" + occupant_info + "\033[0m"
         msg += occupant_info + " "
     print("\t" + msg)
-    print(dotted_line)
+    print_dotted_line()
     print("\033[1m" + "Entering hut %d... " % idx + "\033[0m", end=' ')
 
 
-def enter_hut(idx, huts, dotted_line):
+def enter_hut(idx, huts):
     """Determine and announce the winner"""
     if huts[idx - 1] == 'enemy':
-        print("\033[1m" + "YOU LOSE :( Better luck next time!" +
-              "\033[0m")
+        answer = input("There is enemy in a hut, wanna fight? Y/N")
+        if answer == 'y':
+            attack()
+        else:
+            print_bold("Kaplica")
     else:
-        print("\033[1m" + "Congratulations! YOU WIN!!!" + "\033[0m")
-    print(dotted_line)
+        print_bold("Congratulations! YOU WIN!!!")
+    print_dotted_line()
 
 
-def run_game():
-    """main loop"""
+def reset_health_meter(health_meter):
+    health_meter['enemy'] = 30;
+    health_meter['player'] = 40;
+
+
+def show_health(health_meter, bold):
+    print_bold("Health of player: {}, Health of Orc: {}".format(health_meter['player'], health_meter['enemy']))
+
+def attack(health_meter):
+    injured_unit = random.choice(['player','enemy'])
+    health_meter[injured_unit] -= 4
+
+    show_health(health_meter, bold=False)
+
+
+def play_game(health_meter):
+    huts = occupy_huts()
+    idx = process_user_choice()
+    reveal_ocupants(idx, huts)
+
+    if huts[idx-1] != 'enemy':
+        print_bold("Hura wygrales!!")
+    else:
+        print_bold("Nieprzyjaciel!", end="")
+        show_health(health_meter, bold=True)
+        continue_attack = True
+        while continue_attack:
+            continue_attack = input("Rozwalamy orca?:  y/n: ")
+            if continue_attack == 'y':
+                attack(health_meter)
+
+                if health_meter['enemy'] <= 0:
+                    print_bold("Wygrales")
+                    break;
+                if health_meter['player'] <= 0:
+                    print_bold("Przegrales!")
+                    break
+            else:
+                print_bold("Zwiewasz, zycia zostalo...")
+                show_health(health_meter, bold=True)
+                print_bold("Koniec gry")
+                break
+
+
+
+def run_application():
+    """main function loop"""
     keep_playing = 'y'
     width = 72
-    dotted_line = "-" * width
+    health_meter = {}
+    reset_health_meter(health_meter)
 
-    show_theme_message(dotted_line, width)
-    show_game_mission(dotted_line)
+    show_theme_message(width)
+    show_game_mission()
 
     # The main while loop. Keep playing depending on the user input.
     while keep_playing == 'y':
-        huts = occupy_huts()
-        idx = process_user_choice()
-        reveal_ocupants(idx, huts, dotted_line)
-        enter_hut(idx, huts, dotted_line)
-
+        reset_health_meter(health_meter)
+        play_game(health_meter)
         keep_playing = input("Play again? Yes(y)/No(n):")
 
 
 if __name__ == '__main__':
-    run_game()
+    run_application()
